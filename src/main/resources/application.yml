@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: demo
+
+  data-sources:
+    - name: data-base-1
+      strategy: postgres
+      url: jdbc:postgresql://db-2:5432/mydb
+      table: users
+      user: testuser
+      password: testpass
+      mapping:
+        id: user_id
+        username: login
+        name: first_name
+        surname: last_name
+
+    - name: data-base-2
+      strategy: mysql
+      url: jdbc:mysql://db-1:3306/mydb
+      table: user_table
+      user: testuser
+      password: testpass
+      mapping:
+        id: ldap_login
+        username: ldap_login
+        name: name
+        surname: surname
+
+    # Add more entries for data sources if needed...

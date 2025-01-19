@@ -1,0 +1,35 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db-1
+      - db-2
+
+  db-1:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: testuser
+      MYSQL_PASSWORD: testpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./db-scripts/mysql:/docker-entrypoint-initdb.d:ro
+
+  db-2:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db-scripts/postgres:/docker-entrypoint-initdb.d:ro

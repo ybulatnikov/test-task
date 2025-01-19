@@ -5,7 +5,7 @@ import com.example.demo.config.DataSourceConfigProperties.Mapping;
 import com.example.demo.config.MultipleDataSourceProperties;
 import com.example.demo.model.User;
 import lombok.AllArgsConstructor;
-import org.springframework.dao.DataAccessException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.DataClassRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class UserService {
 
     private MultipleDataSourceProperties multipleDataSourceProperties;
@@ -29,12 +30,9 @@ public class UserService {
     }
 
     private List<User> aggregateDataInParallel() {
-        List<CompletableFuture<List<User>>> futures = multipleDataSourceProperties.getDataSources()
-                .stream()
+        return multipleDataSourceProperties.getDataSources()
+                .parallelStream()
                 .map(entry -> CompletableFuture.supplyAsync(() -> getUsers(entry)))
-                .toList();
-
-        return futures.stream()
                 .map(CompletableFuture::join)
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
@@ -47,7 +45,8 @@ public class UserService {
         JdbcTemplate jdbcTemplate = jdbcTemplates.get(name);
         try {
             return jdbcTemplate.query(selectUsersQuery, new DataClassRowMapper<>(User.class));
-        } catch (DataAccessException e) {
+        } catch (Exception e) {
+            log.error("DB: {}, Error: {}", name, e.getMessage());
             return new ArrayList<>();
         }
     }
